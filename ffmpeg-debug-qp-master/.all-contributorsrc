@@ -1,0 +1,70 @@
+{
+  "projectName": "ffmpeg-debug-qp",
+  "projectOwner": "slhck",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "slhck",
+      "name": "Werner Robitza",
+      "avatar_url": "https://avatars.githubusercontent.com/u/582444?v=4",
+      "profile": "http://slhck.info/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ndtreviv",
+      "name": "Nathan Trevivian",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1530653?v=4",
+      "profile": "https://github.com/ndtreviv",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "lars18th",
+      "name": "Lars The",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9989964?v=4",
+      "profile": "https://github.com/lars18th",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "plebreton",
+      "name": "plebreton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19344718?v=4",
+      "profile": "https://github.com/plebreton",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "winking324",
+      "name": "winking324",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7922054?v=4",
+      "profile": "https://github.com/winking324",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "stg7",
+      "name": "Steve Göring",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9373295?v=4",
+      "profile": "https://stg7.github.io/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true
+}
