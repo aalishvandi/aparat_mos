@@ -23,8 +23,9 @@ class Driver:
          pass
     
     def startDriver(self):
+        # firefox_driver = GeckoDriverManager().install()
+        firefox_driver = "./driver/geckodriver_amd"
         os.popen("java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar --port 9090")
-        time.sleep(10)
         self.server = Server("./libs/browsermob-proxy-2.1.4/bin/browsermob-proxy", options={'port': 9090})
         self.server.start()
         self.proxy = self.server.create_proxy()
@@ -33,10 +34,11 @@ class Driver:
         options.add_argument('--ignore-ssl-errors=yes')
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--proxy-bypass-list=aparat.com')
-        options.headless = False
+        options.add_argument('--headless')
+        # options.headless = True
         # options.add_argument('--mute-audio')
         options.set_preference("media.volume_scale", "0.0")
-        self.driver = webdriver.Firefox(service=Service("./driver/geckodriver034"), options=options)     
+        self.driver = webdriver.Firefox(service=Service(firefox_driver), options=options)     
         self.proxy.new_har("aparat.ir/")
     
 
@@ -189,7 +191,7 @@ def main(file):
     counter=1
     with open(file) as urls_file:
         aparat_urls = [line.strip() for line in urls_file]
-        for x in range(24):
+        for x in range(1):
             for video_url in aparat_urls:
                 try:
                     print(f"========== calculate mos of {video_url} ==========")
