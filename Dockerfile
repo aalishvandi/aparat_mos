@@ -64,7 +64,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 RUN pip3 install libs/itu-p1203-master/
 
 # create logs folder for run program succussfully
-# RUN mkdir logs/ts_files logs/mp4_files
+RUN mkdir logs/ts_files logs/mp4_files
 
 # ENTRYPOINT ["/bin/bash", "-c", "source .venv/bin/activate && python3 ./start_selenium.py --file ./aparat_urls_test.txt"]
 ENTRYPOINT python3 ./firefox_selenium.py --file ./test_urls.txt
