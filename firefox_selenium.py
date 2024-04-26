@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from selenium.webdriver import ActionChains
 
+url_counter=1
 class SeleniumError(Exception):
     pass
 
@@ -201,7 +202,8 @@ def main(file):
                         executor.map(chrome_driver.downloadAndConvertTSFiles,chrome_driver.ts_urls)
                     chrome_driver.file_names=sorted(chrome_driver.file_names)
                     video_mos=chrome_driver.calculateVideoMos()
-                    print(f"MOS of {video_url} : {video_mos}")
+                    print(f"{url_counter}- MOS of {video_url} : {video_mos}")
+                    url_counter+=1
                     video_result=[counter,video_url,chrome_driver.start_video_date,chrome_driver.start_video_time,video_mos,chrome_driver.end_video_time]
                     writer.writerow(video_result)
                     chrome_driver.removeTSFiles()

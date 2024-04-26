@@ -32,9 +32,7 @@ COPY . .
 
 # Clone and build ffmpeg-debug-qp
 RUN cd ffmpeg-debug-qp-master && make && cp ffmpeg_debug_qp /usr/bin/ffmpeg_debug_qp 
-RUN ls /usr/bin/ffm*
 RUN chmod +x /usr/bin/ffmpeg_debug_qp
-RUN cd ..
 
 # install firefox and depencencies
 # RUN install -d -m 0755 /etc/apt/keyrings \
