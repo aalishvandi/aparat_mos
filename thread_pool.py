@@ -13,19 +13,19 @@ from itu_p1203 import p1203_standalone
 from webdriver_manager.firefox import GeckoDriverManager
 from concurrent.futures import ThreadPoolExecutor
 
-
 from selenium.webdriver import ActionChains
-
+import statistics
 class SeleniumError(Exception):
     pass
 
 class Driver:
     def __init__(self):
         self.file_names = []
+        pass
     
     def startDriver(self):
         # firefox_driver = GeckoDriverManager().install()
-        firefox_driver = "./driver/geckodriver_aarch"
+        firefox_driver = "./driver/geckodriver_amd"
         os.popen("java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar --port 9090")
         self.server = Server("./libs/browsermob-proxy-2.1.4/bin/browsermob-proxy", options={'port': 9090})
         self.server.start()
@@ -118,12 +118,15 @@ class Driver:
         # self.driver.close()
 
     def createlogs(self):
-        with open("./logs/network_log.har", "w", encoding="utf-8") as f:
-            f.write(json.dumps(self.proxy.har))
-            print("wrote network logs to logs/network_log.har")
+        # with open("./logs/network_log.har", "w", encoding="utf-8") as f:
+        #     f.write(json.dumps(self.proxy.har))
+        #     print("wrote network logs to logs/network_log.har")
+        with open("./logs/network_log.har", "r") as file:
+            # Load the JSON data into a Python dictionary
+            data = json.load(file)
         # data=json.loads(self.proxy.har)
         self.ts_urls=[]
-        for log in self.proxy.har['log']['entries']:
+        for log in data['log']['entries']:
             try:
                 # URL is present inside the following keys
                 url = log['request']['url']
@@ -150,12 +153,11 @@ class Driver:
         subprocess.run(convert_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.file_names.append(file_name)
     
-    def calculateVideoMos(self):
-        print(f"Calculating mos...")
-        mp4_files = []
-        for file_name in self.file_names:
-            mp4_files.append(f'./logs/mp4_files/{file_name}.mp4')
-        input_data = extractor.Extractor(mp4_files, 3)  # input .ts files, mode
+    def calculateVideoMos(self,mp4_files):
+        print(f"Calculating mos {mp4_files}...")
+        list_file=[]
+        list_file.append(mp4_files)
+        input_data = extractor.Extractor(list_file, 3)  # input .ts files, mode
         report = input_data.extract()
         # Use p1203_standalone to calculate parameters and send it to output
         output_calculated = p1203_standalone.P1203Standalone(report)
@@ -186,31 +188,34 @@ def main(file):
     writer.writerow(["","url","date","start_time","mos","end_time"])
     
     chrome_driver=Driver()
-    chrome_driver.startDriver()
+    # chrome_driver.startDriver()
     counter=1
     with open(file) as urls_file:
-        aparat_urls = [line.strip() for line in urls_file]
-        for x in range(1):
-            for video_url in aparat_urls:
-                try:
-                    print(f"========== calculate mos of {video_url} ==========")
-                    chrome_driver.openPage(video_url)
-                    chrome_driver.createlogs()
-                    # chrome_driver.downloadAndConvertTSFiles()
-                    with ThreadPoolExecutor(max_workers=7) as executor:
-                        executor.map(chrome_driver.downloadAndConvertTSFiles,chrome_driver.ts_urls)
-                    chrome_driver.file_names=sorted(chrome_driver.file_names)
-                    video_mos=chrome_driver.calculateVideoMos()
-                    print(f"MOS of {video_url} : {video_mos}")
-                    video_result=[counter,video_url,chrome_driver.start_video_date,chrome_driver.start_video_time,video_mos,chrome_driver.end_video_time]
-                    writer.writerow(video_result)
-                    chrome_driver.removeTSFiles()
-                    chrome_driver.restartProxy()
-                    counter+=1
-                except Exception as e:
-                    print(f"error in get mos of url {video_url}. {e}")
-                    continue
-    chrome_driver.endOfProcess()
+        # try:
+        # chrome_driver.createlogs()
+        
+        # with ThreadPoolExecutor(max_workers=7) as executor:
+        #     # Submit tasks to the executor, passing each object to the process_object function
+        #     executor.map(chrome_driver.downloadAndConvertTSFiles,chrome_driver.ts_urls)
+        
+        # chrome_driver.downloadAndConvertTSFiles() 
+        chrome_driver.file_names = sorted(os.listdir("logs/mp4_files/"))
+        
+        mp4_files = []
+        for file_name in chrome_driver.file_names:
+            mp4_files.append(f'./logs/mp4_files/{file_name}')
+        with ThreadPoolExecutor(max_workers=7) as executor:
+            futures = [executor.submit(chrome_driver.calculateVideoMos, value) for value in mp4_files]
+            results = [future.result() for future in futures]
+            # executor.map(chrome_driver.calculateVideoMos,mp4_files)
+            
+        # video_mos=chrome_driver.calculateVideoMos()
+        video_mos = statistics.mean(results)
+        print(f"MOS of : {video_mos}")
+        counter+=1
+        # except Exception as e:
+        #     print(f"error in get mos of url . {e}")
+    # chrome_driver.endOfProcess()
     
     output_file.close()
 
