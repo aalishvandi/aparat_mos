@@ -191,7 +191,7 @@ def main(file):
     counter=1
     with open(file) as urls_file:
         aparat_urls = [line.strip() for line in urls_file]
-        for x in range(1):
+        for x in range(24):
             for video_url in aparat_urls:
                 try:
                     print(f"========== calculate mos of {video_url} ==========")
