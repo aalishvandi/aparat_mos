@@ -16,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from selenium.webdriver import ActionChains
 
-url_counter=1
 class SeleniumError(Exception):
     pass
 
@@ -26,7 +25,7 @@ class Driver:
     
     def startDriver(self):
         # firefox_driver = GeckoDriverManager().install()
-        firefox_driver = "./driver/geckodriver_aarch"
+        firefox_driver = "./driver/geckodriver33"
         os.popen("java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar --port 9090")
         self.server = Server("./libs/browsermob-proxy-2.1.4/bin/browsermob-proxy", options={'port': 9090})
         self.server.start()
@@ -141,6 +140,7 @@ class Driver:
                 pass
         
     def downloadAndConvertTSFiles(self,url):
+        self.file_names=[]
         print(url)
         file_name = f"{url.split('.ts')[0].split('/')[-1]}-{datetime.timestamp(datetime.now())}"
         print(f"Download {url}")
@@ -177,6 +177,7 @@ class Driver:
 @click.command()
 @click.option('--file', prompt='Enter file path', type=click.Path(exists=True, dir_okay=False))
 def main(file):
+    url_counter=1
     try:
         os.system("pkill -f 'java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar'")
     except:
