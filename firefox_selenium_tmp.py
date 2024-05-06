@@ -1,0 +1,259 @@
+from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time,csv,click
+import os,requests,json,re,urllib,subprocess
+from datetime import datetime
+from browsermobproxy import Server
+from itu_p1203 import extractor
+from itu_p1203 import p1203_standalone
+from webdriver_manager.firefox import GeckoDriverManager
+from concurrent.futures import ThreadPoolExecutor
+import psutil
+
+from selenium.webdriver import ActionChains
+
+class SeleniumError(Exception):
+    pass
+
+class Driver:
+    def __init__(self):
+        self.url_counter=1
+        self.file_names = []
+    
+    def startDriver(self,url):
+        os.popen("java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar --port 9090")
+        # firefox_driver = GeckoDriverManager().install()
+        firefox_driver = "./driver/geckodriver33"
+        server = Server("./libs/browsermob-proxy-2.1.4/bin/browsermob-proxy", options={'port': 9090})
+        server.start()
+        proxy = server.create_proxy()
+        options = webdriver.FirefoxOptions()
+        options.proxy = proxy.selenium_proxy()
+        options.add_argument('--ignore-ssl-errors=yes')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--proxy-bypass-list=aparat.com')
+        options.add_argument('--headless')
+        # options.headless = True
+        # options.add_argument('--mute-audio')
+        options.set_preference("media.volume_scale", "0.0")
+        print("before create web driver")
+        driver = webdriver.Firefox(service=Service(firefox_driver), options=options)     
+        print("after create web driver")
+        proxy.new_har("aparat.ir/")
+    
+
+    # def openPage(self,url):
+        vast_button=None
+        
+        # Open a web page
+        driver.get(url)
+
+        try:
+            WebDriverWait(driver, timeout=15).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "romeo-player-tooltip"))
+            )
+        except:
+            raise SeleniumError("can not find romeo-player-tooltip")
+
+        check_vast_counter=True        
+        check_vast_button = True
+        try:
+            play_button = WebDriverWait(driver, timeout=5).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, 'romeo-play-toggle'))
+            )
+            print("click on play")
+            play_button.click()
+            time.sleep(3)
+        except:
+            check_vast_counter=False        
+            try:
+                driver.find_element(By.CLASS_NAME, 'vast-skip-counter')
+                print("video is played automatically but vast-skip-counter exists")
+            except:
+                check_vast_button=False
+                try:
+                    driver.find_element(By.CLASS_NAME, 'vast-skip-button')
+                    vast_button = WebDriverWait(driver, timeout=15).until(
+                    EC.element_to_be_clickable((By.CLASS_NAME, 'vast-skip-button')))
+                    print("video is played automatically but vast-skip-button exists")
+                except:
+                    # raise SeleniumError("can not find romeo-player-toggle")
+                    print("vast is crossed")
+                    pass
+                
+        if check_vast_counter:
+            try:
+                driver.find_element(By.CLASS_NAME, 'vast-skip-counter')
+            except:
+                print("vast skip counter not found")
+                check_vast_button = False
+
+        if check_vast_button:
+            try:
+                vast_button = WebDriverWait(driver, timeout=15).until(
+                    EC.element_to_be_clickable((By.CLASS_NAME, 'vast-skip-button'))
+                )
+            except:
+                vast_button = None
+                pass
+        if vast_button:
+            print("click on vast")
+            vast_button.click()
+        cur_time=datetime.now()
+        self.start_video_time=f"{cur_time.hour:02d}:{cur_time.minute:02d}:{cur_time.second:02d}"
+        self.start_video_date=f"{cur_time.year}-{cur_time.month}-{cur_time.day}"
+        print("started video")
+
+        headers = {'Accept': 'application/json'}
+        video_hash=url.split("/")[-1]
+        print(f"get hash of video {video_hash}")
+        r = requests.get('https://www.aparat.com/etc/api/video/videohash/'+video_hash, headers=headers).json()
+        video_duration=r["video"]["duration"]
+        print(f"sleep for {video_duration} video duration")
+        time.sleep(video_duration)
+        cur_time=datetime.now()
+        self.end_video_time=f"{cur_time.hour:02d}:{cur_time.minute:02d}:{cur_time.second:02d}"
+        print("end of video")
+        # driver.close()
+
+    # def createlogs(self):
+    #     with open("./logs/network_log.har", "w", encoding="utf-8") as f:
+    #         f.write(json.dumps(proxy.har))
+    #         print("wrote network logs to logs/network_log.har")
+        # data=json.loads(proxy.har)
+        self.ts_urls=[]
+        for log in proxy.har['log']['entries']:
+            try:
+                # URL is present inside the following keys
+                local_url = log['request']['url']
+
+                is_ts = re.search(r'.*/aparat-video/.*\.ts', local_url)
+                """
+                Every .ts file contains 10 seconds of aparat video; 
+                we want to pass these files to the ITU-T P1203 Input.
+                """
+
+                if is_ts: self.ts_urls.append(local_url)
+            except Exception as error:
+                print(error)
+                pass
+        
+        server.stop()
+        driver.quit()
+
+        os.system("kill -9 `lsof -i :9090 | awk 'NR==2 {print $2}'`")
+        
+        for proc in psutil.process_iter():
+            try:
+                if "java" in proc.name().lower() and any("browsermob" in cmd.lower() for cmd in proc.cmdline()):
+                    proc.terminate()
+                    proc.wait()
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired):
+                pass
+        
+        with ThreadPoolExecutor(max_workers=7) as executor:
+            executor.map(self.downloadAndConvertTSFiles,self.ts_urls)
+            
+        self.file_names=sorted(self.file_names)
+        video_mos=self.calculateVideoMos()
+        print(f"{self.url_counter}- MOS of {url} : {video_mos}")
+        video_result=[self.url_counter,url,self.start_video_date,self.start_video_time,video_mos,self.end_video_time]
+        self.url_counter+=1
+        output_file = open("output.csv", 'a')
+        writer = csv.writer(output_file)
+        writer.writerow(video_result)
+        output_file.close()
+
+        os.system("rm -rf logs/mp4_files/* logs/ts_files/*")        
+
+        
+        
+    def downloadAndConvertTSFiles(self,url):
+        self.file_names=[]
+        print(url)
+        file_name = f"{url.split('.ts')[0].split('/')[-1]}-{datetime.timestamp(datetime.now())}"
+        print(f"Download {url}")
+        urllib.request.urlretrieve(url, f"./logs/ts_files/{file_name}.ts")
+        # convert ts file to mp4
+        print(f"Convert {file_name} to mp4...")
+        convert_command = ['ffmpeg', '-i', f'./logs/ts_files/{file_name}.ts', '-c', 'copy', '-bsf:a', 'aac_adtstoasc', '-f', 'mp4', f'./logs/mp4_files/{file_name}.mp4']
+        subprocess.run(convert_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.file_names.append(file_name)
+    
+    def calculateVideoMos(self):
+        print(f"Calculating mos...")
+        mp4_files = []
+        for file_name in self.file_names:
+            mp4_files.append(f'./logs/mp4_files/{file_name}.mp4')
+        input_data = extractor.Extractor(mp4_files, 3)  # input .ts files, mode
+        report = input_data.extract()
+        # Use p1203_standalone to calculate parameters and send it to output
+        output_calculated = p1203_standalone.P1203Standalone(report)
+        result = output_calculated.calculate_complete()
+        return result['O46']
+    
+    def removeTSFiles(self):
+        os.system("rm -rf logs/mp4_files/* logs/ts_files/*")
+
+    def restartProxy(self):
+        pass
+        # proxy.new_har("aparat.ir/")
+    
+    def endOfProcess(self):
+        pass
+        # server.stop()
+        # driver.quit()
+                
+
+@click.command()
+@click.option('--file', prompt='Enter file path', type=click.Path(exists=True, dir_okay=False))
+def main(file):
+    url_counter=1
+    try:
+        os.system("pkill -f 'java -jar ./libs/browsermob-proxy-2.1.4/lib/browsermob-dist-2.1.4.jar'")
+    except:
+        pass
+    
+    output_file = open("output.csv", 'w')
+    writer = csv.writer(output_file)
+    writer.writerow(["","url","date","start_time","mos","end_time"])
+    output_file.close()
+    
+    chrome_driver=Driver()
+    counter=1
+    with open(file) as urls_file:
+        aparat_urls = [line.strip() for line in urls_file]
+        for x in range(2):
+            for video_url in aparat_urls:
+                try:
+                    print(f"========== calculate mos of {video_url} ==========")
+                    chrome_driver.startDriver(video_url)
+                    # chrome_driver.openPage(video_url)
+                    # chrome_driver.createlogs()
+                    # chrome_driver.downloadAndConvertTSFiles()
+                    # with ThreadPoolExecutor(max_workers=7) as executor:
+                    #     executor.map(chrome_driver.downloadAndConvertTSFiles,chrome_driver.ts_urls)
+                    # chrome_driver.file_names=sorted(chrome_driver.file_names)
+                    # video_mos=chrome_driver.calculateVideoMos()
+                    # print(f"{url_counter}- MOS of {video_url} : {video_mos}")
+                    # url_counter+=1
+                    # video_result=[counter,video_url,chrome_driver.start_video_date,chrome_driver.start_video_time,video_mos,chrome_driver.end_video_time]
+                    # writer.writerow(video_result)
+                    # chrome_driver.removeTSFiles()
+                    # chrome_driver.restartProxy()
+                    counter+=1
+                except Exception as e:
+                    print(f"error in get mos of url {video_url}. {e}")
+                    continue
+    # chrome_driver.endOfProcess()
+    
+    # output_file.close()
+
+
+if __name__ == '__main__':
+    main()
+
