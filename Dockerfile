@@ -15,7 +15,7 @@ RUN apt install ffmpeg -y
 RUN apt install build-essential -y
 
 # Install ffmpeg requirements
-RUN apt install libavdevice-dev libavformat-dev libavfilter-dev libavcodec-dev libswresample-dev libswscale-dev libavutil-dev build-essential pkg-config firefox openjdk-11-jre-headless snap snapd -y
+RUN apt install libavdevice-dev libavformat-dev libavfilter-dev libavcodec-dev libswresample-dev libswscale-dev libavutil-dev build-essential pkg-config firefox openjdk-11-jre-headless -y
 
 # WORKDIR /tmp
 
