@@ -1,0 +1,9 @@
+id,timestamp,location_timestamp,temperature,is_battery_charging,battery_charge_percentage,billing_amount,registration_status_id,allocated_memory_percentage,is_network_data_connected,node_id,is_synced
+1031,73566260695269376,,60,1,70,,1,42,1,0,1
+1032,73566292155695104,,52,1,70,,1,47,1,0,1
+1033,73566319509110784,,64,1,70,,1,56,1,0,1
+1034,73566323616907264,,64,1,70,,1,56,0,0,1
+1035,73566325885566976,,64,1,70,,1,56,0,0,1
+1036,73566355122946048,,71,1,70,,1,33,1,0,1
+1037,73566386616926208,,62,1,70,,1,44,1,0,1
+1038,73566418291392512,,65,1,90,,1,43,1,0,0

@@ -1,0 +1,5 @@
+# RSRP range: -140 dBm (poor)  < -85 dBm (fair) < -70 dBm (good) < -44 dBm (exc)
+# RSSI range: -120 dBm (poor)  < -85 dBm (fair) < -65 dBm (good) < -30 dBm (exc)
+# RSRQ range: -19.5 dB (poor)  < -12 dB (fair) < -9 dB (good) < -3 dB (exc)
+# SNR range: 0 dB (unacceptable) < 10 dB (minimum acceptable) < 20 dB (good) <  30 dB (exc) < excellent
+# CINR range: 0 dB < (poor) < 10 dB () < (moderate) < 20 dB < (good) <  30 dB < excellent

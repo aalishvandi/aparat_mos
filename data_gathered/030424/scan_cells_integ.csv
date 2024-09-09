@@ -1,0 +1,1 @@
+id,timestamp,location_timestamp,sim_id,arfcn,code,sig_pow,sig_quality,sig_rssi,sig_snr,sig_cinr,source_id,technology,param1,param2,param3,param4,param5,info,plmn_id,lac,rac,cell_id,frame_type,node_id,is_synced

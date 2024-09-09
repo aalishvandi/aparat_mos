@@ -1,0 +1,1 @@
+id,timestamp,test_type_id,subtype_id,status_code,start_timestamp,location_timestamp,serving_cell_timestamp,scan_cell_integrated_timestamp,test_timestamp,node_id,is_synced,value,tag,repeat,delay,enableStart,order,testStartTimestamp,testStopTimestamp,timeout,userId,runNum,baseTimestamp,testNodeId,isTestSynced,technology,band,arfcn

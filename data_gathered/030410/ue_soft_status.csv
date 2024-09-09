@@ -1,0 +1,4 @@
+id,timestamp,location_timestamp,temperature,is_battery_charging,battery_charge_percentage,billing_amount,registration_status_id,allocated_memory_percentage,is_network_data_connected,node_id,is_synced
+1769,73602357190590464,,50,1,90,,1,55,1,0,1
+1770,73602388673363968,,50,1,100,,1,74,1,0,1
+1771,73602420425883648,,50,1,90,,1,57,1,0,1

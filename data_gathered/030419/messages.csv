@@ -1,0 +1,1 @@
+id,timestamp,systemTimestamp,location_timestamp,serving_cell_timestamp,sim_id,technology,direction,category_id,channel_type_id,name_id,name_extra_id,msg_hex,radio_bearer_id,arfcn,code,param1,param2,info,node_id,is_synced

@@ -1,0 +1,1 @@
+id,timestamp,location_timestamp,serving_cell_timestamp,version,number_of_records,system_frame_number,sub_frame_number,out_of_sync_bler_percentage,in_sync_bler_percentage,out_of_sync_count,in_sync_count,t310_timer_status,node_id,is_synced

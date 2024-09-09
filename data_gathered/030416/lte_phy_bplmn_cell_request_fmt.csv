@@ -1,0 +1,1 @@
+id,timestamp,location_timestamp,serving_cell_timestamp,version,standards_version,frequency,cell_id,barred_status,q_rx_lev_min,q_rx_lev_min_offset,p_max,node_id,is_synced

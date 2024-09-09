@@ -1,0 +1,1 @@
+id,timestamp,location_timestamp,sim_id,technology,band,ul_arfcn,dl_arfcn,code,ul_bw,dl_bw,plmn_id,lac,rac,cell_id,param1,param2,param3,param4,param5,info,lifetime,source_id,frame_type,node_id

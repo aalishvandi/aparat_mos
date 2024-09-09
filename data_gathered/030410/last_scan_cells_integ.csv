@@ -1,0 +1,2 @@
+id,timestamp,locationTimestamp,simId,arfcn,code,sig_pow,sig_quality,sig_rssi,sig_snr,sig_cinr,sourceId,technology,param1,param2,param3,param4,param5,info,plmnId,lac,rac,cellId,frameType,nodeId,isSynced
+314605,73602432190513152,,0,10838,,-700,-90,-700,,,3,3,,,,,,,43211,34200,,2697489,0,0,0
